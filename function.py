@@ -1,6 +1,6 @@
 import os
 from unittest import result
-from cv2 import cvtColor
+from cv2 import KeyPoint, cvtColor
 from matplotlib import image
 import numpy as np
 import cv2
@@ -34,13 +34,18 @@ def Optical_map(data_image):
     maskHSV=np.zeros_like(data_image[0])
     maskHSV[...,1]=255
     Optical_flow_map=[]
-    while count<6799:
-        if first==False:
+    while count<6800:
+        if count==0:
             frame_prv=data_image[0]
-        if first==True:
+            f_frame=frame_prv.copy()
+            frame_next=data_image[count+1]
+        elif count==6800:
+            frame_prv=data_image[6799]
+            frame_next=data_image[0]
+        elif count>0 and count<6799:
             frame_prv=data_image[count]
+            frame_next=data_image[count+1]
         
-        frame_next=data_image[count+1]
         flow=Optical_flow(frame_prv,frame_next)
         mag,ang=cv2.cartToPolar(flow[...,0],flow[...,1])
         maskHSV[...,0]=ang*(180/np.pi/2)
@@ -49,8 +54,9 @@ def Optical_map(data_image):
         graymask=cv2.cvtColor(maskBGR,cv2.COLOR_BGR2GRAY)
         _,binary=cv2.threshold(graymask,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
-        # cv2.imshow("map",maskBGR)
-        # cv2.imshow("binary",binary)
+
+        cv2.imshow("map",maskBGR)
+        cv2.imshow("binary",binary)
 
         Optical_flow_map.append(binary)
         count+=1
@@ -74,4 +80,6 @@ def Add(imageData,Map):
     Result=np.array(Result)
     return Result
 
+        
+    
 
